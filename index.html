@@ -71,9 +71,9 @@
         <div class="stage-pill-content">
           <div class="stage-pill-left">
             <span class="stage-calendar-badge" aria-hidden="true">11<small>NOV</small></span>
-            <div>
-              <div id="timerLabel" class="stage-pill-label">11 DE NOVIEMBRE 9 H | USHUAIA</div>
-              <div id="timerSubtext" class="stage-pill-sub">Tiempo restante para el simulacro</div>
+            <div class="stage-pill-texts">
+              <div id="timerLabel" class="stage-pill-label">11 NOV · 09:00 H</div>
+              <div id="timerSubtext" class="stage-pill-sub">Tiempo restante</div>
             </div>
           </div>
           <div id="timerDigits" class="stage-pill-digits">00d 00h 00m 00s</div>
@@ -85,17 +85,17 @@
         <button class="q-pill q-pill-sos" id="btnOpenSos" type="button">
           🚨 SOS
         </button>
-        <button class="q-pill" id="btnCompassOrient" type="button" title="Centrar y orientar el mapa hacia donde apunta tu celular">
-          🧭 Orientar mapa
+        <button class="q-pill" id="btnCompassOrient" type="button" title="Centrar y orientar el mapa">
+          🧭 Orientar
         </button>
         <button class="q-pill" id="btnOpenSearchStreet" type="button">
-          🔍 Buscar calle
+          🔍 Calle
         </button>
-        <button class="q-pill" id="btnAddCalendar" type="button" title="Agendar recordatorio en el calendario del celular">
-          📅 Agendar 11/11
+        <button class="q-pill" id="btnAddCalendar" type="button" title="Agendar recordatorio">
+          📅 Agendar
         </button>
         <button class="q-pill" id="btnOpenLegend" type="button">
-          🗺️ Referencias
+          🗺️ Mapa
         </button>
       </div>
 
@@ -152,7 +152,7 @@
             <span id="statusDistancePill" class="status-dist-pill" style="display:none;"></span>
           </div>
           <p id="statusDescription">
-            Tocá el botón naranja para conocer tu estado y la vía de evacuación más cercana.
+            Tocá el botón naranja para conocer tu estado y ubicar las vías de evacuación.
           </p>
         </div>
       </div>
@@ -173,22 +173,26 @@
         </div>
       </div>
 
-      <!-- Acciones Directas (1 Principal + 2 Secundarias) -->
       <div class="action-grid">
         <button type="button" class="btn-locate-main" id="btnVerifyGps">
           <span class="locate-pulse-dot" id="gpsDot"></span>
           <span id="gpsBtnLabel">Verificar mi ubicación actual</span>
         </button>
 
-        <div class="sub-actions-row two-cols">
+        <div class="sub-actions-row three-cols">
+          <a href="https://simulacro-tsumami.pages.dev/" target="_blank" rel="noopener noreferrer" class="card-action card-green" id="btnMoreInfo">
+            <span class="card-action-title">🌐 Más info</span>
+            <span class="card-action-sub">Web oficial ↗</span>
+          </a>
+
           <button type="button" class="card-action card-blue is-locked" id="btnOpenCert">
             <span class="card-action-title" id="certBtnTitle">🔒 Certificado</span>
-            <span class="card-action-sub" id="certBtnSub">Al evacuar a Zona Segura</span>
+            <span class="card-action-sub" id="certBtnSub">Al llegar a meta</span>
           </button>
 
           <button type="button" class="card-action card-coral" id="btnOpenReport">
             <span class="card-action-title">📝 Reportar</span>
-            <span class="card-action-sub">Obstáculos o avisos</span>
+            <span class="card-action-sub">Avisos en vía</span>
           </button>
         </div>
       </div>
@@ -238,7 +242,7 @@
           <span class="swatch swatch-via-azul"></span>
           <div>
             <strong>Vías de Evacuación (Flechas Azules)</strong>
-            <p>Calles prioritarias para subir caminando hacia la Zona Segura.</p>
+            <p>Calles prioritarias señalizadas para subir caminando hacia la Zona Segura.</p>
           </div>
         </div>
         <div class="legend-row">
@@ -348,7 +352,7 @@
         <button class="modal-close" data-close="modalPrivacyConsent" type="button">✕</button>
       </div>
       <p class="modal-helper" style="line-height: 1.45; color: var(--tdf-charcoal);">
-        Para indicarte si estás en la <strong>Zona a Evacuar</strong>, guiarte hacia la <strong>Zona Segura</strong> y medir los tiempos de respuesta del ejercicio, esta aplicación procesa la ubicación GPS de tu dispositivo de forma <strong>anónima y con fines exclusivamente estadísticos y preventivos</strong> (Ley Nacional N° 25.326 de Protección de Datos Personales).
+        Para indicarte si estás en la <strong>Zona a Evacuar</strong>, ubicarte respecto a la <strong>Zona Segura</strong> y medir los tiempos de respuesta del ejercicio, esta aplicación procesa la ubicación GPS de tu dispositivo de forma <strong>anónima y con fines exclusivamente estadísticos y preventivos</strong> (Ley Nacional N° 25.326 de Protección de Datos Personales).
       </p>
       <div class="modal-two-btns">
         <button type="button" class="btn-primary-orange" id="btnAcceptPrivacyGps">
@@ -366,7 +370,7 @@
     <div class="drill-alert-card" role="alertdialog" aria-modal="true" aria-labelledby="drillAlertTitle">
       <div class="drill-alert-icon" aria-hidden="true">🚨</div>
       <h2 id="drillAlertTitle">SIMULACRO EN CURSO</h2>
-      <p>Dirigite a la vía de evacuación más cercana y subí hasta la Zona Segura verde.</p>
+      <p>Dirigite hacia la Zona Segura verde utilizando las vías de evacuación señalizadas (flechas azules).</p>
       <p class="drill-alert-note">Seguí las indicaciones del personal operativo.</p>
       <button type="button" class="btn-primary-orange" id="btnDrillAlertOk">Entendido</button>
     </div>

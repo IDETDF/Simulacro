@@ -58,19 +58,15 @@ const appState = {
   compassActive: false,
   currentHeading: 0,
   lastCoords: null,
-  lastPathCalcCoords: null,
   trackCoords: [],             // Array de [lng, lat, timestamp]
   distanceWalkedMeters: 0,
-  nearestSafeLineSnap: null,
   // Cronómetro
   stopwatchRunning: false,
   stopwatchStartMs: null,
   stopwatchCompletedMs: null,
   // Caché Espacial en RAM
   evacPolygonsRAM: [],
-  safeLinesRAM: [],
   safePolygonsRAM: [],
-  evacRoutesRAM: [],
   streetsIndexRAM: [],
   // Emergencia
   wakeLockSentinel: null,
@@ -105,13 +101,9 @@ try {
   if (savedTrack) appState.trackCoords = JSON.parse(savedTrack);
 
   const cEvac = localStorage.getItem('dgot_ram_evac');
-  const cLine = localStorage.getItem('dgot_ram_line');
   const cSafeQgis = localStorage.getItem('dgot_ram_zona_segura_qgis');
-  const cRoutes = localStorage.getItem('dgot_ram_evac_routes');
   if (cEvac) appState.evacPolygonsRAM = JSON.parse(cEvac);
-  if (cLine) appState.safeLinesRAM = JSON.parse(cLine);
   if (cSafeQgis) appState.safePolygonsRAM = JSON.parse(cSafeQgis);
-  if (cRoutes) appState.evacRoutesRAM = JSON.parse(cRoutes);
 } catch (e) {
   console.warn('Error restaurando caché local:', e);
 }
@@ -137,12 +129,12 @@ function updateCertificateButtonStateUI() {
 
   if (unlocked) {
     btnCert.classList.remove('is-locked');
-    titleCert.textContent = '🏅 Mi Certificado';
-    subCert.textContent   = 'Disponible para descargar';
+    titleCert.textContent = '🏅 Certificado';
+    subCert.textContent   = 'Descargar ahora';
   } else {
     btnCert.classList.add('is-locked');
     titleCert.textContent = '🔒 Certificado';
-    subCert.textContent   = 'Al evacuar a Zona Segura';
+    subCert.textContent   = 'Al llegar a meta';
   }
 }
 
@@ -169,10 +161,6 @@ const mapStyle = {
     zona_segura_source: {
       type: "geojson",
       data: "./zona_segura.geojson"
-    },
-    ruta_activa: {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
     },
     recorrido_usuario_source: {
       type: "geojson",
@@ -284,7 +272,7 @@ const mapStyle = {
         "symbol-placement": "line",
         "symbol-spacing": 75,
         "icon-image": "flecha_azul",
-        "icon-size": 1.3,
+        "icon-size": 0.85,
         "icon-allow-overlap": true,
         "icon-ignore-placement": true
       }
@@ -370,17 +358,6 @@ const mapStyle = {
       paint: { "line-color": "rgb(11, 167, 41)", "line-width": 1.2 }
     },
     {
-      id: "guia-escape",
-      type: "line",
-      source: "ruta_activa",
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: {
-        "line-color": "#0088ff",
-        "line-width": 4.5,
-        "line-dasharray": [2, 2]
-      }
-    },
-    {
       id: "recorrido-real-halo",
       type: "line",
       source: "recorrido_usuario_source",
@@ -449,7 +426,7 @@ map.on('dragstart', () => {
 });
 
 /*************************************************************************
- * 3. PRECARGA OPTIMIZADA EN RAM (SIN TURF.UNION PESADO NI IDLE INFINITO)
+ * 3. PRECARGA OPTIMIZADA EN RAM
  *************************************************************************/
 async function loadZonaSeguraGeoJsonIntoRAM() {
   try {
@@ -492,22 +469,6 @@ function captureVectorFeaturesIntoRAM() {
     }
   }
 
-  const rawLines = map.querySourceFeatures('operativas_source', { sourceLayer: 'cota_segurageojson' }) || [];
-  if (rawLines.length > appState.safeLinesRAM.length) {
-    appState.safeLinesRAM = rawLines
-      .filter(f => f.geometry && (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'))
-      .map(f => ({ type: 'Feature', geometry: f.geometry, properties: f.properties || {} }));
-    try { localStorage.setItem('dgot_ram_line', JSON.stringify(appState.safeLinesRAM)); } catch (_) {}
-  }
-
-  const rawRoutes = map.querySourceFeatures('operativas_source', { sourceLayer: 'vias_evacuaciongeojson' }) || [];
-  if (rawRoutes.length > appState.evacRoutesRAM.length) {
-    appState.evacRoutesRAM = rawRoutes
-      .filter(f => f.geometry && (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'))
-      .map(f => ({ type: 'Feature', geometry: f.geometry, properties: f.properties || {} }));
-    try { localStorage.setItem('dgot_ram_evac_routes', JSON.stringify(appState.evacRoutesRAM)); } catch (_) {}
-  }
-
   const rawStreets = map.querySourceFeatures('operativas_source', { sourceLayer: 'callesgeojson' }) || [];
   if (rawStreets.length > 0 && appState.streetsIndexRAM.length < 150) {
     const byName = new Map();
@@ -528,12 +489,8 @@ function captureVectorFeaturesIntoRAM() {
     appState.streetsIndexRAM = Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-
-  // Si ya tenemos todas las geometrías clave y el grafo vial en RAM, desconectar el listener de idle
   if (
     appState.evacPolygonsRAM.length > 0 &&
-    appState.safeLinesRAM.length > 0 &&
-    appState.evacRoutesRAM.length > 0 &&
     appState.streetsIndexRAM.length > 20
   ) {
     map.off('idle', debouncedCaptureRAM);
@@ -564,7 +521,6 @@ const interactiveLayers = [
 ];
 
 map.on('click', (e) => {
-  // Si el Admin activó "Tocar Mapa = GPS: ON", simular posición en el punto tocado
   if (appState.simulateClickGps) {
     appState.gpsPausedForInspection = true;
     document.getElementById('gpsDot').classList.remove('active');
@@ -592,6 +548,9 @@ map.on('click', (e) => {
     .addTo(map);
 });
 
+/*************************************************************************
+ * 4. EVALUACIÓN DE LAS 3 SITUACIONES ESPACIALES
+ *************************************************************************/
 function isPointInsideEvacPolygon(pt) {
   let list = appState.evacPolygonsRAM;
   if (!list || list.length === 0) {
@@ -620,57 +579,10 @@ function isPointInsideZonaSeguraGeoJson(pt) {
   return false;
 }
 
-function findNearestPointOnLines(pt, linesArray) {
-  let best = null;
-  let minKm = Infinity;
-  for (const ln of linesArray) {
-    if (!ln || !ln.geometry) continue;
-    try {
-      const snapped = turf.nearestPointOnLine(ln, pt, { units: 'kilometers' });
-      if (snapped && snapped.geometry && snapped.geometry.coordinates) {
-        const dKm = typeof snapped.properties?.dist === 'number'
-          ? snapped.properties.dist
-          : turf.distance(pt, snapped, { units: 'kilometers' });
-        if (dKm < minKm) {
-          minKm = dKm;
-          best = { coords: snapped.geometry.coordinates, distKm: dKm, feature: ln };
-        }
-      }
-    } catch (_) {}
-  }
-  return best;
-}
-
-function findBestEvacuationPath(pt) {
-  const userCoords = pt.geometry.coordinates;
-  let safeLines = appState.safeLinesRAM;
-  if (!safeLines || safeLines.length === 0) {
-    safeLines = map.querySourceFeatures('operativas_source', { sourceLayer: 'cota_segurageojson' }) || [];
-  }
-
-  const snap = findNearestPointOnLines(pt, safeLines);
-  if (!snap) return null;
-
-  const dM = Math.max(1, Math.round(snap.distKm * 1000));
-  return {
-    coords: snap.coords,
-    pathCoords: [userCoords, snap.coords],
-    distanceMeters: dM,
-    distToRouteMeters: 0,
-    estMinutes: Math.max(1, Math.ceil(dM / 40)),
-    isDirectToSafeZone: true,
-    isOrientative: true
-  };
-}
-
 function evaluateThreeSituations(lngLat) {
   const pt = turf.point(lngLat);
 
-  const inEvac = isPointInsideEvacPolygon(pt);
-  const nearestLine = findBestEvacuationPath(pt);
-  appState.nearestSafeLineSnap = nearestLine;
-
-  if (inEvac) {
+  if (isPointInsideEvacPolygon(pt)) {
     if (appState.currentStage === 'DURANTE_SIMULACRO') {
       appState.cameFromEvacZone = true;
       localStorage.setItem('dgot_came_from_evac', 'true');
@@ -802,7 +714,6 @@ function handleGpsUpdate(coords) {
   const titleEl    = document.getElementById('statusTitle');
   const pillEl     = document.getElementById('statusDistancePill');
   const descEl     = document.getElementById('statusDescription');
-  const line       = appState.nearestSafeLineSnap;
 
   if (situation === 'ZONA_EVACUAR') {
     statusBox.className = 'status-banner status-evac';
@@ -813,9 +724,9 @@ function handleGpsUpdate(coords) {
     }
 
     pillEl.style.display = 'none';
-
     titleEl.textContent = isDrillActive ? '¡Estás en Zona a Evacuar!' : 'Estás en Zona a Evacuar';
-    descEl.innerHTML = `Dirigite hacia la <strong>Zona Segura</strong> se recomienda utilizar las <strong>vías de evacuación</strong> señalizadas (flechas azules) y pasajes peatonales.`;
+    descEl.innerHTML =
+      'Dirigite hacia la <strong>Zona Segura (verde)</strong> subiendo por las <strong>vías de evacuación</strong> señalizadas (flechas azules) y escaleras peatonales.';
 
   } else if (situation === 'ZONA_SEGURA') {
     statusBox.className = 'status-banner status-safe';
@@ -896,7 +807,6 @@ function startGpsTracking() {
 
   appState.gpsWatchId = navigator.geolocation.watchPosition(
     (pos) => {
-      // Si el usuario está inspeccionando una calle buscada o simulando con clic, no pisar con el GPS real
       if (appState.gpsPausedForInspection) return;
       handleGpsUpdate([pos.coords.longitude, pos.coords.latitude]);
     },
@@ -950,7 +860,7 @@ async function toggleCompassOrientation() {
   if (appState.compassActive) {
     appState.compassActive = false;
     btn.classList.remove('compass-active');
-    btn.textContent = '🧭 Orientar mapa';
+    btn.textContent = '🧭 Orientar';
     window.removeEventListener('deviceorientationabsolute', handleDeviceOrientation, true);
     window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
     if (userMarkerEl) userMarkerEl.classList.remove('compass-on');
@@ -973,7 +883,7 @@ async function toggleCompassOrientation() {
   appState.compassActive = true;
   appState.autoFollowUser = true;
   btn.classList.add('compass-active');
-  btn.textContent = '🧭 Brújula activa';
+  btn.textContent = '🧭 Activa';
 
   if (userMarkerEl) userMarkerEl.classList.add('compass-on');
 
@@ -1246,7 +1156,7 @@ function tickApplicationClock() {
     releaseScreenWakeLock();
     postBanner.style.display = 'none';
     banner.className = 'stage-pill';
-    label.textContent = '11 DE NOVIEMBRE 9 H | USHUAIA';
+    label.textContent = '11 NOV · 09:00 H · USHUAIA';
     subtext.textContent = 'Tiempo restante para el simulacro';
     digits.textContent = formatCountdown(Math.max(0, DRILL_START_MS - now));
 
@@ -1284,7 +1194,7 @@ function tickApplicationClock() {
   } else if (stage === 'POST_SIMULACRO') {
     releaseScreenWakeLock();
     stopEmergencyAlarm();
-    document.getElementById('modalDrillAlert').classList.remove('open')
+    document.getElementById('modalDrillAlert').classList.remove('open');
     if (prevStage !== 'POST_SIMULACRO') {
       enqueueTelemetrySilent('DRILL_FINISHED_SUMMARY');
     }
@@ -1515,7 +1425,6 @@ function getSyncQueue() {
 
 function saveSyncQueue(q) {
   try {
-    // Limitar la cola local a los últimos 40 registros no sincronizados para no saturar localStorage
     const trimmed = q.filter(i => !i.synced).slice(-40);
     localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(trimmed));
   } catch (_) {}
@@ -1536,7 +1445,6 @@ function enqueueTelemetrySilent(milestoneName) {
     ? formatStopwatch(appState.stopwatchCompletedMs)
     : (appState.stopwatchStartMs ? formatStopwatch(Date.now() - appState.stopwatchStartMs) : '00:00:00');
 
-  // Solo incluir el WKT completo en los hitos de finalización para ahorrar cuota en localStorage
   const includeFullWkt =
     milestoneName === 'SAFE_ZONE_REACHED_FROM_EVAC' ||
     milestoneName === 'DRILL_FINISHED_SUMMARY';
@@ -1554,7 +1462,7 @@ function enqueueTelemetrySilent(milestoneName) {
     evacuationTimeFormatted: timeFormatted,
     distanceWalkedMeters: appState.distanceWalkedMeters,
     verticesCount: appState.trackCoords.length,
-    distToSafeLineMeters: appState.nearestSafeLineSnap ? appState.nearestSafeLineSnap.distanceMeters : '',
+    distToSafeLineMeters: '',
     lat: appState.lastCoords ? appState.lastCoords[1] : '',
     lng: appState.lastCoords ? appState.lastCoords[0] : '',
     wktTrack: includeFullWkt ? buildWktLineString(appState.trackCoords) : '',
@@ -1584,12 +1492,10 @@ async function flushSyncQueueSilent() {
     });
 
     if (resp.ok) {
-      // Re-leer la cola fresca de localStorage para no pisar ítems agregados durante el await
       const freshQueue = getSyncQueue().filter(item => !sentIds.has(item.id));
       saveSyncQueue(freshQueue);
     }
   } catch (_) {
-    // Sin conexión: los ítems permanecen intactos en localStorage para el siguiente intento
   } finally {
     isFlushingQueue = false;
   }
@@ -1861,7 +1767,6 @@ document.getElementById('btnSimClickMap').addEventListener('click', (e) => {
     ? '📍 Tocar Mapa = GPS: ON'
     : '📍 Tocar Mapa = GPS: OFF';
   if (appState.simulateClickGps) {
-    // Cerrar el panel admin automáticamente para dejar cómodo el mapa para hacer clic
     document.getElementById('adminPanel').classList.remove('active');
   }
 });
