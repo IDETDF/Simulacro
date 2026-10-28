@@ -1,0 +1,177 @@
+{
+  "puente_vial": {
+    "width": 36,
+    "height": 36,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "puente_peatonal": {
+    "width": 36,
+    "height": 36,
+    "x": 36,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "vuln_albergue": {
+    "width": 36,
+    "height": 36,
+    "x": 72,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "vuln_jubilados": {
+    "width": 36,
+    "height": 36,
+    "x": 108,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "vuln_hogar": {
+    "width": 36,
+    "height": 36,
+    "x": 144,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "vuln_caad": {
+    "width": 36,
+    "height": 36,
+    "x": 180,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "salud_pub": {
+    "width": 36,
+    "height": 36,
+    "x": 216,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "salud_priv": {
+    "width": 36,
+    "height": 36,
+    "x": 252,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "legislativo": {
+    "width": 36,
+    "height": 36,
+    "x": 288,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "bomberos": {
+    "width": 36,
+    "height": 36,
+    "x": 324,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "seguridad": {
+    "width": 36,
+    "height": 36,
+    "x": 360,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "deporte": {
+    "width": 36,
+    "height": 36,
+    "x": 396,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "ciencia": {
+    "width": 36,
+    "height": 36,
+    "x": 432,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "escuela": {
+    "width": 36,
+    "height": 36,
+    "x": 468,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "jardin": {
+    "width": 36,
+    "height": 36,
+    "x": 504,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "combustible": {
+    "width": 36,
+    "height": 36,
+    "x": 540,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "potabilizadora": {
+    "width": 36,
+    "height": 36,
+    "x": 576,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "antena": {
+    "width": 36,
+    "height": 36,
+    "x": 612,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "electrogeno": {
+    "width": 36,
+    "height": 36,
+    "x": 648,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "comando": {
+    "width": 36,
+    "height": 36,
+    "x": 684,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "encuentro_existente": {
+    "width": 36,
+    "height": 36,
+    "x": 720,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "encuentro_propuesta": {
+    "width": 36,
+    "height": 36,
+    "x": 756,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "encuentro_escuela": {
+    "width": 36,
+    "height": 36,
+    "x": 792,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "helipuerto": {
+    "width": 36,
+    "height": 36,
+    "x": 828,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "flecha_azul": {
+    "width": 36,
+    "height": 36,
+    "x": 864,
+    "y": 0,
+    "pixelRatio": 1
+  }
+}

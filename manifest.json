@@ -1,0 +1,25 @@
+{
+  "name": "Simulacro ante Sismo/Tsunami - Ushuaia",
+  "short_name": "Simulacro TDF",
+  "description": "Aplicación ciudadana offline para el Simulacro de Evacuación por Sismo/Tsunami en Ushuaia.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#062338",
+  "theme_color": "#062338",
+  "icons": [
+    {
+      "src": "./vortice.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./vortice.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#062338" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Simulacro ante Sismo/Tsunami | Gobierno de Tierra del Fuego</title>
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./vortice.png" type="image/png" />
+
+  <!-- Tipografías Institucionales -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Librerías Cartográficas Locales -->
+  <link rel="stylesheet" href="./lib/maplibre-gl.css" onerror="this.href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css'" />
+  <script src="./lib/maplibre-gl.js" onerror="this.src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js'"></script>
+  <script src="./lib/pmtiles.js" onerror="this.src='https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js'"></script>
+  <script src="./lib/turf.min.js" onerror="this.src='https://unpkg.com/@turf/turf@6.5.0/turf.min.js'"></script>
+
+  <!-- Google Identity Services (Solo para Admin) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Hoja de Estilos -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- MAPA MAPLIBRE -->
+  <main id="map" aria-label="Mapa de evacuación de Ushuaia"></main>
+
+  <!-- CONTENEDOR SUPERIOR COMPACTO -->
+  <div class="top-ui-stack">
+    <!-- 1. Cabecera Institucional -->
+    <header class="tdf-header">
+      <div class="tdf-header-inner">
+        <div class="tdf-brand" id="btnAdminUnlock" title="Gobierno de Tierra del Fuego">
+          <img src="./vortice.png" alt="Logo Tierra del Fuego" class="tdf-ring-logo" />
+          <div class="tdf-brand-titles">
+            <span class="tdf-gob-label">Gobierno de <strong>Tierra del Fuego</strong></span>
+            <span class="tdf-drill-label">SIMULACRO ANTE SISMO/TSUNAMI</span>
+          </div>
+        </div>
+
+        <div class="tdf-header-right">
+          <button id="btnMuteAlarm" class="btn-mute-alarm" type="button">🔕 Silenciar</button>
+          <span id="networkStatus" class="net-badge">Online</span>
+        </div>
+      </div>
+      <div class="tdf-rainbow-rule"></div>
+    </header>
+
+    <!-- 2. Contador con Ola Dinámica + Píldoras + Panel Admin -->
+    <div class="stage-stack-pad">
+      <div id="timerBanner" class="stage-pill">
+        <div class="wave-progress-track" id="waveProgressTrack">
+          <svg class="wave-svg" viewBox="0 0 400 90" preserveAspectRatio="none" aria-hidden="true">
+            <path class="wave-layer-back" d="M0,25 C90,5 170,45 260,20 C330,2 370,30 400,18 L400,90 L0,90 Z" />
+            <path class="wave-layer-front" d="M0,42 C110,62 190,18 290,44 C350,58 380,32 400,38 L400,90 L0,90 Z" />
+          </svg>
+          <div class="wave-crest-glow"></div>
+        </div>
+
+        <div class="flyer-rings-bg" aria-hidden="true"></div>
+
+        <div class="stage-pill-content">
+          <div class="stage-pill-left">
+            <span class="stage-calendar-badge" aria-hidden="true">11<small>NOV</small></span>
+            <div>
+              <div id="timerLabel" class="stage-pill-label">11 DE NOVIEMBRE 9 H | USHUAIA</div>
+              <div id="timerSubtext" class="stage-pill-sub">Tiempo restante para el simulacro</div>
+            </div>
+          </div>
+          <div id="timerDigits" class="stage-pill-digits">00d 00h 00m 00s</div>
+        </div>
+      </div>
+
+      <!-- 3. Píldoras Operativas Esenciales -->
+      <div class="quick-pills-row">
+        <button class="q-pill q-pill-sos" id="btnOpenSos" type="button">
+          🚨 SOS
+        </button>
+        <button class="q-pill" id="btnCompassOrient" type="button" title="Centrar y orientar el mapa hacia donde apunta tu celular">
+          🧭 Orientar mapa
+        </button>
+        <button class="q-pill" id="btnOpenSearchStreet" type="button">
+          🔍 Buscar calle
+        </button>
+        <button class="q-pill" id="btnAddCalendar" type="button" title="Agendar recordatorio en el calendario del celular">
+          📅 Agendar 11/11
+        </button>
+        <button class="q-pill" id="btnOpenLegend" type="button">
+          🗺️ Referencias
+        </button>
+      </div>
+
+      <!-- 4. Panel de Administración Autenticado con Google -->
+      <div id="adminPanel" class="admin-panel">
+        <div class="admin-header">
+          <strong>PANEL DE ADMINISTRACIÓN</strong>
+          <button class="admin-close" id="btnCloseAdmin" type="button">Cerrar ✕</button>
+        </div>
+        <div id="adminStatusText" class="admin-meta">Estado en servidor: verificando...</div>
+
+        <div id="googleSignInBtn"></div>
+
+        <div id="adminControls" class="admin-controls" style="display:none;">
+          <div class="admin-label">1. Control global (afecta a TODOS los celulares):</div>
+          <div class="admin-btn-row">
+            <button class="admin-btn" id="btnAdminPre" type="button">Pre-simulacro</button>
+            <button class="admin-btn admin-btn-danger" id="btnAdminStart" type="button">▶ Iniciar simulacro</button>
+            <button class="admin-btn" id="btnAdminEnd" type="button">■ Finalizar simulacro</button>
+            <button class="admin-btn" id="btnAdminAuto" type="button">Modo automático</button>
+          </div>
+
+          <div class="admin-label" style="margin-top:4px;">2. Simulación local de GPS (solo en tu pantalla):</div>
+          <div class="admin-btn-row">
+            <button class="admin-btn" id="btnSimClickMap" type="button">📍 Tocar Mapa = GPS: OFF</button>
+            <button class="admin-btn" id="btnSimEvacZone" type="button">🔴 Zona Roja</button>
+            <button class="admin-btn" id="btnSimSafeZone" type="button">🟢 Zona Segura</button>
+            <button class="admin-btn" id="btnSimOutside" type="button">🟠 Fuera</button>
+            <button class="admin-btn" id="btnResetLocalSim" type="button">🔄 Reiniciar local</button>
+          </div>
+
+          <button class="admin-btn" id="btnAdminLogout" type="button" style="margin-top:4px;">Cerrar sesión admin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL OPERATIVO INFERIOR MINIMALISTA -->
+  <section class="citizen-sheet" id="citizenSheet" aria-live="polite">
+    <div class="sheet-rainbow-bar"></div>
+
+    <button type="button" class="sheet-handle-btn" id="btnToggleSheet" aria-label="Minimizar o expandir panel">
+      <span class="sheet-handle-bar"></span>
+      <span class="sheet-handle-label" id="sheetToggleText">Minimizar panel ▼</span>
+    </button>
+
+    <div class="citizen-sheet-body" id="citizenSheetBody">
+      <!-- Bloque de Diagnóstico de Ubicación (Las 3 Situaciones) -->
+      <div id="statusBox" class="status-banner status-neutral">
+        <div class="status-icon-wrap" id="statusIcon">📍</div>
+        <div class="status-copy">
+          <div class="status-head-row">
+            <h2 id="statusTitle">Verificá tu ubicación</h2>
+            <span id="statusDistancePill" class="status-dist-pill" style="display:none;"></span>
+          </div>
+          <p id="statusDescription">
+            Tocá el botón naranja para conocer tu estado y la vía de evacuación más cercana.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bloque Resumen Post-Simulacro / Llegada a Zona Segura -->
+      <div id="postDrillBanner" class="post-summary-box" style="display:none;">
+        <div class="post-summary-text">
+          <strong id="postSummaryTitle">¡Evacuación Completada!</strong>
+          <span id="postSummaryStats">Tiempo: --:-- | Recorrido: 0 m</span>
+        </div>
+        <div class="post-summary-actions">
+          <button type="button" class="btn-safe-wa" id="btnNotifySafeWa" title="Avisar por WhatsApp que llegué a Zona Segura">
+            Avisar 📲
+          </button>
+          <button type="button" class="btn-cert-inline" id="btnBannerCert">
+            Certificado
+          </button>
+        </div>
+      </div>
+
+      <!-- Acciones Directas (1 Principal + 2 Secundarias) -->
+      <div class="action-grid">
+        <button type="button" class="btn-locate-main" id="btnVerifyGps">
+          <span class="locate-pulse-dot" id="gpsDot"></span>
+          <span id="gpsBtnLabel">Verificar mi ubicación actual</span>
+        </button>
+
+        <div class="sub-actions-row two-cols">
+          <button type="button" class="card-action card-blue is-locked" id="btnOpenCert">
+            <span class="card-action-title" id="certBtnTitle">🔒 Certificado</span>
+            <span class="card-action-sub" id="certBtnSub">Al evacuar a Zona Segura</span>
+          </button>
+
+          <button type="button" class="card-action card-coral" id="btnOpenReport">
+            <span class="card-action-title">📝 Reportar</span>
+            <span class="card-action-sub">Obstáculos o avisos</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL 1: BUSCADOR DE CALLES OFFLINE -->
+  <div class="modal-backdrop" id="modalSearchStreet">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔍 Consultar una calle en el mapa</h3>
+        <button class="modal-close" data-close="modalSearchStreet" type="button">✕</button>
+      </div>
+      <div class="form-field">
+        <label for="streetSearchInput">Escribí el nombre de la calle</label>
+        <input type="search" id="streetSearchInput" class="input-clean" placeholder="Ej: San Martín, Maipú, Kuanip, Gob. Paz..." autocomplete="off" />
+      </div>
+      <div id="streetSearchResults" class="search-results-list">
+        <p class="modal-helper">Ingresá al menos 2 letras para buscar en la red vial de Ushuaia.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: REFERENCIAS DEL MAPA -->
+  <div class="modal-backdrop" id="modalLegend">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Referencias del Mapa</h3>
+        <button class="modal-close" data-close="modalLegend" type="button">✕</button>
+      </div>
+      <div class="legend-list">
+        <div class="legend-row">
+          <span class="swatch swatch-evac"></span>
+          <div>
+            <strong>Zona a Evacuar (Área Roja)</strong>
+            <p>Sector delimitado del simulacro. Si estás dentro, subí hacia la Zona Segura verde.</p>
+          </div>
+        </div>
+        <div class="legend-row">
+          <span class="swatch swatch-safe-poly"></span>
+          <div>
+            <strong>Zona Segura (Área y Línea Verde)</strong>
+            <p>Meta de evacuación. Al ingresar a esta franja verde se detiene tu cronómetro.</p>
+          </div>
+        </div>
+        <div class="legend-row">
+          <span class="swatch swatch-via-azul"></span>
+          <div>
+            <strong>Vías de Evacuación (Flechas Azules)</strong>
+            <p>Calles prioritarias para subir caminando hacia la Zona Segura.</p>
+          </div>
+        </div>
+        <div class="legend-row">
+          <span class="swatch swatch-escalera"></span>
+          <div>
+            <strong>Escaleras Peatonales</strong>
+            <p>Pasajes con escalones para ascenso rápido en pendientes.</p>
+          </div>
+        </div>
+        <div class="legend-row">
+          <span class="swatch swatch-user-track"></span>
+          <div>
+            <strong>Tu Recorrido Real (Verde Brillante)</strong>
+            <p>Camino registrado por tu GPS desde el inicio de la evacuación hasta la Zona Segura.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CERTIFICADO DE PARTICIPACIÓN -->
+  <div class="modal-backdrop" id="modalCert">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Constancia de Participación</h3>
+        <button class="modal-close" data-close="modalCert" type="button">✕</button>
+      </div>
+
+      <div class="form-field">
+        <label for="certName">Tu Nombre y Apellido</label>
+        <input type="text" id="certName" class="input-clean" placeholder="Ej: Sofía Gómez" maxlength="38" />
+      </div>
+
+      <div class="form-field">
+        <label for="certNeighborhood">Barrio o Institución (Opcional)</label>
+        <input type="text" id="certNeighborhood" class="input-clean" placeholder="Ej: Barrio Centro / Comercio" maxlength="42" />
+      </div>
+
+      <div class="cert-canvas-box">
+        <canvas id="certCanvas" width="1080" height="1920"></canvas>
+      </div>
+
+      <div class="modal-two-btns">
+        <button type="button" class="btn-primary-orange" id="btnShareCert">
+          Compartir en WhatsApp / Redes
+        </button>
+        <button type="button" class="btn-outline-dark" id="btnDownloadCert">
+          Guardar Imagen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: REPORTAR OBSTÁCULO O COMENTARIO -->
+  <div class="modal-backdrop" id="modalReport">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Reportar o Comentar</h3>
+        <button class="modal-close" data-close="modalReport" type="button">✕</button>
+      </div>
+      <form id="reportForm" class="clean-form">
+        <div class="form-field">
+          <label for="repCategory">Motivo</label>
+          <select id="repCategory" class="input-clean" required>
+            <option value="Eventualidad / Obstáculo en vía">Obstáculo o problema en la vía de escape</option>
+            <option value="Sugerencia">Sugerencia para mejorar</option>
+            <option value="Queja / Inconveniente">Inconveniente durante el simulacro</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="repComment">Descripción</label>
+          <textarea id="repComment" class="input-clean" placeholder="Contanos qué observaste..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary-orange">Enviar Reporte</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: TELÉFONOS DE EMERGENCIA -->
+  <div class="modal-backdrop" id="modalSos">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Teléfonos de Emergencia</h3>
+        <button class="modal-close" data-close="modalSos" type="button">✕</button>
+      </div>
+      <p class="modal-helper">Tocá para llamar directamente desde tu teléfono:</p>
+      <div class="sos-grid">
+        <a href="tel:103" class="sos-item sos-orange">
+          <strong>103</strong>
+          <span>Defensa Civil</span>
+        </a>
+        <a href="tel:911" class="sos-item sos-blue">
+          <strong>911</strong>
+          <span>Emergencias / Policía</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: AVISO DE PRIVACIDAD Y CONSENTIMIENTO GPS (LEY 25.326) -->
+  <div class="modal-backdrop" id="modalPrivacyConsent">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📍 Uso de Ubicación (GPS)</h3>
+        <button class="modal-close" data-close="modalPrivacyConsent" type="button">✕</button>
+      </div>
+      <p class="modal-helper" style="line-height: 1.45; color: var(--tdf-charcoal);">
+        Para indicarte si estás en la <strong>Zona a Evacuar</strong>, guiarte hacia la <strong>Zona Segura</strong> y medir los tiempos de respuesta del ejercicio, esta aplicación procesa la ubicación GPS de tu dispositivo de forma <strong>anónima y con fines exclusivamente estadísticos y preventivos</strong> (Ley Nacional N° 25.326 de Protección de Datos Personales).
+      </p>
+      <div class="modal-two-btns">
+        <button type="button" class="btn-primary-orange" id="btnAcceptPrivacyGps">
+          Aceptar y activar GPS
+        </button>
+        <button type="button" class="btn-outline-dark" data-close="modalPrivacyConsent">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 7: ALERTA DE SIMULACRO EN CURSO -->
+  <div class="modal-backdrop drill-alert-backdrop" id="modalDrillAlert">
+    <div class="drill-alert-card" role="alertdialog" aria-modal="true" aria-labelledby="drillAlertTitle">
+      <div class="drill-alert-icon" aria-hidden="true">🚨</div>
+      <h2 id="drillAlertTitle">SIMULACRO EN CURSO</h2>
+      <p>Dirigite a la vía de evacuación más cercana y subí hasta la Zona Segura verde.</p>
+      <p class="drill-alert-note">Seguí las indicaciones del personal de Defensa Civil.</p>
+      <button type="button" class="btn-primary-orange" id="btnDrillAlertOk">Entendido</button>
+    </div>
+  </div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
