@@ -700,7 +700,10 @@ function handleGpsUpdate(coords) {
     recordBreadcrumbPoint(coords);
   }
 
-  if (appState.autoFollowUser || appState.stopwatchRunning) {
+  const [[w, s], [e, n]] = USHUAIA_CONFIG.maxBounds;
+  const isInsideMapBounds = (coords[0] >= w && coords[0] <= e && coords[1] >= s && coords[1] <= n);
+
+  if ((appState.autoFollowUser || appState.stopwatchRunning) && isInsideMapBounds) {
     map.easeTo({
       center: coords,
       zoom: Math.max(map.getZoom(), 15.6),
@@ -1754,7 +1757,17 @@ document.getElementById('btnOpenSos').addEventListener('click', () => openModal(
 document.getElementById('btnVerifyGps').addEventListener('click', () => {
   appState.autoFollowUser = true;
   if (appState.lastCoords) {
-    map.easeTo({ center: appState.lastCoords, zoom: 15.8 });
+    const [[w, s], [e, n]] = USHUAIA_CONFIG.maxBounds;
+    const isInsideMapBounds = (
+      appState.lastCoords[0] >= w && appState.lastCoords[0] <= e &&
+      appState.lastCoords[1] >= s && appState.lastCoords[1] <= n
+    );
+
+    if (isInsideMapBounds) {
+      map.easeTo({ center: appState.lastCoords, zoom: 15.8 });
+    } else {
+      alert('Tu ubicación GPS actual se encuentra fuera del área delimitada para el simulacro de Ushuaia.');
+    }
   }
   requestGpsWithPrivacyCheck();
 });
