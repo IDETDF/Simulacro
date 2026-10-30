@@ -1540,6 +1540,17 @@ document.getElementById('reportForm').addEventListener('submit', (e) => {
 });
 
 window.addEventListener('load', () => {
+  const now = Date.now();
+  
+  if (now < DRILL_START_MS) {
+    if (appState.serverMode !== 'MANUAL') {
+      localStorage.removeItem('dgot_server_status');
+      appState.serverMode = 'AUTO';
+      appState.serverStage = null;
+    }
+    resetStopwatch();
+  }
+
   enqueueTelemetrySilent('APP_OPEN');
 });
 
