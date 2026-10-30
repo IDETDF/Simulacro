@@ -982,6 +982,7 @@ function triggerEmergencyAlarm() {
   if (appState.alarmTriggeredOnce) return;
   appState.alarmTriggeredOnce = true;
 
+  document.querySelector('.tdf-header')?.classList.add('alarm-active');
   document.getElementById('btnMuteAlarm').classList.add('visible');
   safeVibrate([500, 250, 500, 250, 800]);
 
@@ -1035,6 +1036,7 @@ function stopEmergencyAlarm() {
     appState.audioCtx.close().catch(() => {});
     appState.audioCtx = null;
   }
+  document.querySelector('.tdf-header')?.classList.remove('alarm-active');
   document.getElementById('btnMuteAlarm').classList.remove('visible');
 }
 

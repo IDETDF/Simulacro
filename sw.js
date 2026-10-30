@@ -3,7 +3,7 @@
  * Versión v2.2.0 - Arquitectura Modular (index.html + styles.css + app.js)
  */
 
-const CACHE_VERSION = 'dgot-evac-v3.3.1';
+const CACHE_VERSION = 'dgot-evac-v3.3.3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PMTILES_CACHE = `${CACHE_VERSION}-pmtiles`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
@@ -26,8 +26,7 @@ const STATIC_ASSETS = [
   './sprite/sprite.png',
   './sprite/sprite@2x.json',
   './sprite/sprite@2x.png',
-  './fonts/Open Sans Regular/0-255.pbf',
-  './fonts/Arial Unicode MS Regular/0-255.pbf'
+  './fonts/Open Sans Regular,Arial Unicode MS Regular/0-255.pbf'
 ];
 
 self.addEventListener('install', (event) => {

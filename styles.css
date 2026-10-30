@@ -78,14 +78,24 @@ html, body {
   gap: 8px;
 }
 
-/* Logo apaisado IDETDF en el nav superior */
+.idetdf-nav-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
 .idetdf-nav-logo {
   height: 28px;
   width: auto;
   max-width: 105px;
   object-fit: contain;
-  flex-shrink: 0;
   display: block;
+  transition: opacity 0.2s ease;
+}
+
+.idetdf-nav-link:hover .idetdf-nav-logo {
+  opacity: 0.85;
 }
 
 .tdf-brand {
@@ -153,20 +163,67 @@ html, body {
   color: var(--tdf-orange-alert);
 }
 
+/* Manejo de textos por defecto */
+.drill-text-alarm {
+  display: none;
+}
+
+.drill-text-full {
+  display: inline;
+}
+
+/* Estado cuando la alarma está sonando */
+.tdf-header.alarm-active .tdf-gob-label {
+  display: none;
+}
+
+.tdf-header.alarm-active .drill-text-full {
+  display: none;
+}
+
+.tdf-header.alarm-active .drill-text-alarm {
+  display: inline;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--tdf-orange-alert);
+  letter-spacing: 0.1px;
+}
+
+/* Botón silenciar optimizado */
 .btn-mute-alarm {
   display: none;
   background: var(--tdf-coral);
   color: var(--tdf-white);
   border: none;
-  border-radius: 6px;
-  padding: 4px 9px;
+  border-radius: 8px;
+  padding: 4px 7px;
   font-size: 0.68rem;
   font-weight: 800;
   cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(255, 59, 29, 0.4);
 }
 
 .btn-mute-alarm.visible {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Enlace del logo IDETDF */
+.idetdf-nav-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.idetdf-nav-logo {
+  height: 26px;
+  width: auto;
+  max-width: 95px;
+  object-fit: contain;
+  display: block;
 }
 
 .tdf-rainbow-rule {
