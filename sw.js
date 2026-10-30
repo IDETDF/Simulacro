@@ -3,7 +3,7 @@
  * Versión v2.2.0 - Arquitectura Modular (index.html + styles.css + app.js)
  */
 
-const CACHE_VERSION = 'dgot-evac-v3.4.2';
+const CACHE_VERSION = 'dgot-evac-v3.4.3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PMTILES_CACHE = `${CACHE_VERSION}-pmtiles`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
