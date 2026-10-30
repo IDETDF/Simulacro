@@ -3,7 +3,7 @@
  * Versión v2.2.0 - Arquitectura Modular (index.html + styles.css + app.js)
  */
 
-const CACHE_VERSION = 'dgot-evac-v3.2.0';
+const CACHE_VERSION = 'dgot-evac-v3.3.1';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PMTILES_CACHE = `${CACHE_VERSION}-pmtiles`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
@@ -15,6 +15,8 @@ const STATIC_ASSETS = [
   './app.js',
   './manifest.json',
   './vortice.png',
+  './logo.png',
+  './logo_completo.png',
   './zona_segura.geojson',
   './lib/maplibre-gl.css',
   './lib/maplibre-gl.js',

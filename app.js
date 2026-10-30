@@ -1542,11 +1542,8 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('online', () => {
-  updateNetworkUI();
   flushSyncQueueSilent();
 });
-
-window.addEventListener('offline', updateNetworkUI);
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
@@ -1555,18 +1552,6 @@ document.addEventListener('visibilitychange', () => {
 });
 
 setInterval(flushSyncQueueSilent, 30000);
-
-function updateNetworkUI() {
-  const badge = document.getElementById('networkStatus');
-  if (navigator.onLine) {
-    badge.classList.remove('offline');
-    badge.textContent = 'Online';
-  } else {
-    badge.classList.add('offline');
-    badge.textContent = 'Offline';
-  }
-}
-updateNetworkUI();
 
 async function syncServerStatus() {
   if (!navigator.onLine || !appState.webhookUrl) return;

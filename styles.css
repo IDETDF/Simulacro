@@ -78,6 +78,16 @@ html, body {
   gap: 8px;
 }
 
+/* Logo apaisado IDETDF en el nav superior */
+.idetdf-nav-logo {
+  height: 28px;
+  width: auto;
+  max-width: 105px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
 .tdf-brand {
   display: flex;
   align-items: center;
