@@ -134,7 +134,7 @@ function updateCertificateButtonStateUI() {
   } else {
     btnCert.classList.add('is-locked');
     titleCert.textContent = '🔒 Certificado';
-    subCert.textContent   = 'Al llegar a meta';
+    subCert.textContent   = 'Al llegar a zona segura>';
   }
 }
 
